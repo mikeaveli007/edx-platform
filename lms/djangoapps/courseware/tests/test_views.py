@@ -3,7 +3,7 @@
 Tests courseware views.py
 """
 
-from urllib import urlencode
+from urllib import urlencode, quote
 import ddt
 import json
 import itertools
@@ -194,16 +194,21 @@ class ViewsTestCase(ModuleStoreTestCase):
     def setUp(self):
         super(ViewsTestCase, self).setUp()
         self.course = CourseFactory.create(display_name=u'teꜱᴛ course')
-        self.chapter = ItemFactory.create(category='chapter', parent_location=self.course.location)
+        self.chapter = ItemFactory.create(
+            category='chapter',
+            parent_location=self.course.location,
+            display_name="Chapter 1",
+        )
         self.section = ItemFactory.create(
             category='sequential',
             parent_location=self.chapter.location,
             due=datetime(2013, 9, 18, 11, 30, 00),
+            display_name='Sequential 1',
         )
         self.vertical = ItemFactory.create(
             category='vertical',
             parent_location=self.section.location,
-            display_name='Vertical 1'
+            display_name='Vertical 1',
         )
         self.problem = ItemFactory.create(
             category='problem',
@@ -213,12 +218,13 @@ class ViewsTestCase(ModuleStoreTestCase):
 
         self.section2 = ItemFactory.create(
             category='sequential',
-            parent_location=self.chapter.location
+            parent_location=self.chapter.location,
+            display_name='Sequential 2',
         )
         self.vertical2 = ItemFactory.create(
             category='vertical',
             parent_location=self.section2.location,
-            display_name='Vertical 2'
+            display_name='Vertical 2',
         )
         self.problem2 = ItemFactory.create(
             category='problem',
@@ -239,6 +245,12 @@ class ViewsTestCase(ModuleStoreTestCase):
 
         self.org = u"ꜱᴛᴀʀᴋ ɪɴᴅᴜꜱᴛʀɪᴇꜱ"
         self.org_html = "<p>'+Stark/Industries+'</p>"
+
+        self.request = self.request_factory.get("foo")
+        self.request.user = self.user
+
+        # refresh the course from the modulestore so that it has children
+        self.course = modulestore().get_course(self.course.id)
 
     def test_index_success(self):
         response = self._verify_index_response()
@@ -786,6 +798,31 @@ class ViewsTestCase(ModuleStoreTestCase):
         request.META['HTTP_REFERER'] = 'foo'  # pylint: disable=no-member
         response = views.course_info(request, course_id)
         self.assertEqual(response.status_code, 200)
+
+    def test_accordion(self):
+        table_of_contents = toc_for_course(
+            self.request.user,
+            self.request,
+            self.course,
+            unicode(self.course.get_children()[0].scope_ids.usage_id),
+            None,
+            None
+        )
+
+        view = ''.join(render_accordion(self.request, self.course, table_of_contents['chapters']).split())
+        encoded_course_run = quote(self.course.id.run.encode('utf-8'))
+
+        self.assertIn(
+            'href="/courses/org.0/course_0/' +
+            encoded_course_run +
+            '/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>',
+            view)
+        
+        self.assertIn(
+            'href="/courses/org.0/course_0/' +
+            encoded_course_run +
+            '/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>',
+            view)
 
 
 @attr('shard_1')
