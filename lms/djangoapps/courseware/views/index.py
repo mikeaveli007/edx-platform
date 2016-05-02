@@ -382,6 +382,7 @@ class CoursewareIndex(View):
             'bookmarks_api_url': reverse('bookmarks'),
             'language_preference': self._get_language_preference(),
             'disable_optimizely': True,
+            'disable_window_wrap': True,
         }
         table_of_contents = toc_for_course(
             self.effective_user,
@@ -408,6 +409,7 @@ class CoursewareIndex(View):
             courseware_context['disable_student_access'] = True
 
         if self.section:
+            courseware_context['disable_accordion'] = True
             # chromeless data
             if self.section.chrome:
                 chrome = [s.strip() for s in self.section.chrome.lower().split(",")]
@@ -428,6 +430,31 @@ class CoursewareIndex(View):
             )
             courseware_context['fragment'] = self.section.render(STUDENT_VIEW, section_context)
 
+        # FOLLOWING WORKS!
+        # table_of_contents = toc_for_course(
+        #     self.effective_user,
+        #     self.request,
+        #     self.course,
+        #     self.chapter_url_name,
+        #     self.section_url_name,
+        #     self.field_data_cache,
+        # )
+        # section_context = self._create_section_context(
+        #     table_of_contents['previous_of_active_section'],
+        #     table_of_contents['next_of_active_section'],
+        # )
+        # courseware_context = {
+        #     'fragment': self.section.render(STUDENT_VIEW, section_context),
+        #     'course': self.course,
+        #     'disable_accordion': True,
+        #     'allow_iframing': True,
+        #     'disable_header': True,
+        #     'disable_footer': True,
+        #     'disable_window_wrap': True,
+        #     'disable_preview_menu': True,
+        #     'staff_access': self.is_staff,
+        #     'xqa_server': settings.FEATURES.get('XQA_SERVER', 'http://your_xqa_server.com'),
+        # }
         return courseware_context
 
     def _create_section_context(self, previous_of_active_section, next_of_active_section):
