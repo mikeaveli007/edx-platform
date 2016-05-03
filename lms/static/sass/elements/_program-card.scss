@@ -91,6 +91,23 @@
   .certificate-status {
     font-size: em(12);
     color: $gray;
+
+    .secondary {
+      display: inline-block;
+      position: absolute;
+      left: 0px;
+      top: -($baseline*30);
+      overflow: hidden;
+
+      &:focus,
+      &:active {
+        position: relative;
+        top: auto;
+        width: auto;
+        height: auto;
+        margin: 0;
+      }
+    }
   }
 
   .progress {

@@ -13,31 +13,31 @@
         gettext('You have earned certificates in %(completed_courses)s of the %(total_courses)s courses so far.'),
         {completed_courses: progress.total.completed, total_courses: progress.total.courses}, true
     ) %></p>
-  <% } %>
-</div>
-<% if (progress) { %>
-<div class="progress">
-    <div class="bar complete" style="width:<%- progress.percentage.completed %>;"></div>
-    <div class="bar in-progress" style="width:<%- progress.percentage.in_progress %>;">
-        <span class="sr"><%= interpolate(
+    <p class="certificate-status">
+        <a href="<%- marketingUrl %>" class="secondary"><%= interpolate(
             ngettext(
                 '%(count)s course are in progress.',
                 '%(count)s courses are in progress.',
                 progress.total.in_progress
             ),
             {count: progress.total.in_progress}, true 
-        ) %></span>
-    </div>
-    <div class="bar not-started">
-        <span class="sr"><%= interpolate(
+        ) %></a>
+        <a href="<%- marketingUrl %>" class="secondary"><%= interpolate(
             ngettext(
                 '%(count)s course have not been started.',
                 '%(count)s courses have not been started.',
                 progress.total.not_started
             ),
             {count: progress.total.not_started}, true 
-        ) %></span>
-    </div>
+        ) %></a>
+    </p>
+  <% } %>
+</div>
+<% if (progress) { %>
+<div class="progress">
+    <div class="bar complete" style="width:<%- progress.percentage.completed %>;"></div>
+    <div class="bar in-progress" style="width:<%- progress.percentage.in_progress %>;"></div>
+    <div class="bar not-started"></div>
 </div>
 <% } %>
 <a href="<%- marketingUrl %>" class="card-link">
