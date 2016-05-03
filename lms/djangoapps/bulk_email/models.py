@@ -212,7 +212,7 @@ class CourseEmail(Email):
 
     @classmethod
     def create(
-            cls, course_id, sender, to_option, subject, html_message,
+            cls, course_id, sender, targets, subject, html_message,
             text_message=None, template_name=None, from_addr=None, cohort_name=None):
         """
         Create an instance of CourseEmail.
@@ -221,30 +221,26 @@ class CourseEmail(Email):
         if text_message is None:
             text_message = html_to_text(html_message)
 
-        # perform some validation here:
-        if to_option not in TO_OPTIONS:
-            fmt = 'Course email being sent to unrecognized to_option: "{to_option}" for "{course}", subject "{subject}"'
-            msg = fmt.format(to_option=to_option, course=course_id, subject=subject)
-            raise ValueError(msg)
-
-        # Ensure our desired target exists
-        desired_target_class = TO_OPTION_CLASS_MAP.get(to_option, None)
-        if desired_target_class is None:
-            fmt = 'Course email being sent to unrecognized target: "{target}" for "{course}", subject "{subject}"'
-            msg = fmt.format(target=to_option, course=course_id, subject=subject)
-            raise ValueError(msg)
-        elif desired_class_target is CohortTarget:
-            cohort = CohortTarget.ensure_valid_cohort(cohort_name, course_id)
-            new_target = CohortTarget.objects.get_or_create(cohort=cohort)
-        else:
-            new_target = desired_target_class.objects.get_or_create()
+        new_targets = []
+        for target in targets:
+            # Ensure our desired target exists
+            desired_target_class = TO_OPTION_CLASS_MAP.get(target, None)
+            if desired_target_class is None:
+                fmt = 'Course email being sent to unrecognized target: "{target}" for "{course}", subject "{subject}"'
+                msg = fmt.format(target=to_option, course=course_id, subject=subject)
+                raise ValueError(msg)
+            elif desired_class_target is CohortTarget:
+                cohort = CohortTarget.ensure_valid_cohort(cohort_name, course_id)
+                new_target = CohortTarget.objects.get_or_create(cohort=cohort)
+            else:
+                new_target = desired_target_class.objects.get_or_create()
+            new_targets.append(target)
 
         # create the task, then save it immediately:
         course_email = cls(
             course_id=course_id,
             sender=sender,
-            to_option=to_option,
-            target=new_target,
+            target=new_targets,
             subject=subject,
             html_message=html_message,
             text_message=text_message,
