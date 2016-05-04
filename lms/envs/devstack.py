@@ -99,6 +99,10 @@ STATICFILES_STORAGE = 'openedx.core.storage.DevelopmentStorage'
 
 # Revert to the default set of finders as we don't want the production pipeline
 STATICFILES_FINDERS = [
+<<<<<<< HEAD
+=======
+    'openedx.core.djangoapps.theming.finders.ComprehensiveThemeFinder',
+>>>>>>> 8127158e2af778065c3b1324aa0847bf2517fafe
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]

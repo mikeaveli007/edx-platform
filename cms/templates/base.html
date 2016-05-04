@@ -1,4 +1,10 @@
 ## coding=utf-8
+
+## Pages currently use v1 styling by default. Once the Pattern Library
+## rollout has been completed, this default can be switched to v2.
+<%! main_css = "style-main-v1" %>
+
+## Standard imports
 <%namespace name='static' file='static_content.html'/>
 <%!
 from django.utils.translation import ugettext as _
@@ -7,6 +13,7 @@ from openedx.core.djangolib.js_utils import (
     dump_js_escaped_json, js_escaped_string
 )
 %>
+
 <%page expression_filter="h"/>
 <!doctype html>
 <!--[if lte IE 9]><html class="ie9 lte9" lang="${LANGUAGE_CODE}"><![endif]-->
@@ -36,7 +43,8 @@ from openedx.core.djangolib.js_utils import (
     <%static:css group='style-vendor'/>
     <%static:css group='style-vendor-tinymce-content'/>
     <%static:css group='style-vendor-tinymce-skin'/>
-    <%static:css group='style-main'/>
+
+    <%static:css group='${self.attr.main_css}'/>
 
     <%include file="widgets/segment-io.html" />
 
@@ -46,7 +54,7 @@ from openedx.core.djangolib.js_utils import (
   <body class="${static.dir_rtl()} <%block name='bodyclass'></%block> lang_${LANGUAGE_CODE}">
     <%block name="view_notes"></%block>
 
-    <a class="nav-skip" href="#content">${_("Skip to main content")}</a>
+    <a class="nav-skip" href="#main">${_("Skip to main content")}</a>
 
     <script type="text/javascript">
       window.baseUrl = "${settings.STATIC_URL | n, js_escaped_string}";
@@ -64,9 +72,11 @@ from openedx.core.djangolib.js_utils import (
       <%block name="page_alert"></%block>
       </div>
 
-      <div id="content" tabindex="-1">
-      <%block name="content"></%block>
-      </div>
+      <main id="main" aria-label="Content" tabindex="-1">
+          <div id="content">
+          <%block name="content"></%block>
+          </div>
+      </main>
 
       % if user.is_authenticated():
         <%include file="widgets/sock.html" args="online_help_token=online_help_token" />

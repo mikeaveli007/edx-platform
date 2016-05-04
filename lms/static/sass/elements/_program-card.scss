@@ -3,58 +3,129 @@
 @import '../base/grid-settings';
 @import 'neat/neat'; // lib - Neat
 
-$card-height: 150px;
-
 .program-card{
   @include span-columns(12);  
-  height: $card-height;
-  border:1px solid $border-color-l3;
-  box-sizing:border-box;
-  padding: $baseline;
+  border: 1px solid $border-color-l3;
+  border-bottom: none;
+  box-sizing: border-box;
   margin-bottom: $baseline;
-  position:relative;
+  position: relative;
+  display: inline;
+
   .card-link{
-    position:absolute;
-    top:0;
-    bottom:0;
-    right:0;
-    left:0;
-    outline:0;
-    border:0;
-    z-index:1;
-    height: $card-height;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0;
+    z-index: 1;
+    opacity: 0.8;
+    &:hover,
+    &:focus{
+      opacity: 1;
+    }
+    .banner-image-container{
+      position: relative;
+      overflow: hidden;
+      height: 116px;
+      .banner-image{
+        position: absolute;
+        top: 0;
+        left: 50%;
+        z-index: 0;
+        transform: translate(-50%, 0);
+        min-height: 100%;
+      }
+    }
   }
+
   .text-section{
+    padding: 40px $baseline $baseline;
+    margin-top: 106px;
+    position: relative;
+
     .meta-info{
       @include outer-container;
-      margin-bottom: $baseline;
       font-size: em(12);
+      color: $gray;
+      position: absolute;
+      top: $baseline;
+      width: calc(100% - 40px);
+
       .organization{
         @include span-columns(6);
-        color: $gray;
+        white-space: nowrap;
+        overflow: hidden;
       }
+
       .category{
         @include span-columns(6);
-        text-align:right;
-        span{
+        text-align: right;
+
+        .category-text{
             @include float(right);
         }
+
         .xseries-icon{
           @include float(right);
-          @include margin-right($baseline*0.2);
+          @include margin-right($baseline*0.25);
           background: url('#{$static-path}/images/icon-sm-xseries-black.png') no-repeat;
           background-color: transparent;
-
-          width: ($baseline*1);
-          height: ($baseline*1);
+          background-size: 100%;
+          width: ($baseline*0.7);
+          height: ($baseline*0.7);
         }
       }
     }
+ 
     .title{
-      font-size:em(30);
-      color: $gray-l1;
+      @extend %t-title4;
+      font-size: em(24);
+      color: $gray-d2;
       margin-bottom: 10px;
-      line-height: 100%;
+      line-height: 1.2;
+    }
+  }
+
+  .certificate-status {
+    font-size: em(12);
+    color: $gray;
+  }
+
+  .progress {
+    height: 5px;
+    background: $x-light;
+
+    .bar {
+      height: 100%;
+      position: relative;
+      float: left;
+
+      &.complete {
+        background: $success-dark;
+      }
+
+      &.in-progress {
+        background: $warning-base;
+      }
+    }
+  }
+}
+
+@include media($bp-small) {
+  .program-card{
+    @include omega(n);
+    @include span-columns(4);
+
+    .card-link{
+      .banner-image-container{
+        height: 166px;
+      }
+    }
+
+    .text-section{
+      margin-top: 156px;
     }
   }
 }
@@ -62,7 +133,18 @@ $card-height: 150px;
 
 @include media($bp-medium) {
   .program-card{
+    @include omega(n);
     @include span-columns(8);
+
+    .card-link{
+      .banner-image-container{
+        height: 242px;
+      }
+    }
+
+    .text-section{
+      margin-top: 232px;
+    }
   }
 }
 
@@ -72,7 +154,16 @@ $card-height: 150px;
   .program-card{
     @include omega(2n);
     @include span-columns(6);
-    display:inline;
+
+    .card-link{
+      .banner-image-container{
+        height: 116px;
+      }
+    }
+
+    .text-section{
+      margin-top: 106px;
+    }
   }
 }
 
@@ -80,7 +171,16 @@ $card-height: 150px;
   .program-card{
     @include omega(2n);
     @include span-columns(6);
-    display:inline;
+
+    .card-link{
+      .banner-image-container{
+        height: 145px;
+      }
+    }
+
+    .text-section{
+      margin-top: 135px;
+    }
   }
 }
 

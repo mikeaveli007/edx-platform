@@ -11,6 +11,7 @@ from urlparse import urljoin
 import pytz
 from markupsafe import escape
 from mock import Mock, patch
+from nose.plugins.attrib import attr
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from pyquery import PyQuery as pq
 
@@ -45,6 +46,7 @@ from certificates.tests.factories import GeneratedCertificateFactory  # pylint: 
 from lms.djangoapps.verify_student.models import SoftwareSecurePhotoVerification
 import shoppingcart  # pylint: disable=import-error
 from openedx.core.djangoapps.programs.tests.mixins import ProgramsApiConfigMixin
+from openedx.core.djangoapps.theming.test_util import with_is_edx_domain
 
 # Explicitly import the cache from ConfigurationModel so we can reset it after each test
 from config_models.models import cache
@@ -111,22 +113,6 @@ class CourseEndingTest(TestCase):
                 'survey_url': survey_url,
                 'grade': '67',
                 'mode': 'honor',
-                'linked_in_url': None,
-                'can_unenroll': False,
-            }
-        )
-
-        cert_status = {'status': 'regenerating', 'grade': '67', 'mode': 'verified'}
-        self.assertEqual(
-            _cert_info(user, course, cert_status, course_mode),
-            {
-                'status': 'generating',
-                'show_disabled_download_button': True,
-                'show_download_url': False,
-                'show_survey_button': True,
-                'survey_url': survey_url,
-                'grade': '67',
-                'mode': 'verified',
                 'linked_in_url': None,
                 'can_unenroll': False,
             }
@@ -226,7 +212,7 @@ class DashboardTest(ModuleStoreTestCase):
         """
         Check that the css class and the status message are in the dashboard html.
         """
-        CourseModeFactory(mode_slug=mode, course_id=self.course.id)
+        CourseModeFactory.create(mode_slug=mode, course_id=self.course.id)
         CourseEnrollment.enroll(self.user, self.course.location.course_key, mode=mode)
 
         if mode == 'verified':
@@ -263,7 +249,7 @@ class DashboardTest(ModuleStoreTestCase):
         """
         Check that the css class and the status message are not in the dashboard html.
         """
-        CourseModeFactory(mode_slug=mode, course_id=self.course.id)
+        CourseModeFactory.create(mode_slug=mode, course_id=self.course.id)
         CourseEnrollment.enroll(self.user, self.course.location.course_key, mode=mode)
 
         if mode == 'verified':
@@ -312,7 +298,7 @@ class DashboardTest(ModuleStoreTestCase):
         self.assertIsNone(course_mode_info['days_for_upsell'])
 
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
-    @patch('courseware.views.log.warning')
+    @patch('courseware.views.index.log.warning')
     @patch.dict('django.conf.settings.FEATURES', {'ENABLE_PAID_COURSE_REGISTRATION': True})
     def test_blocked_course_scenario(self, log_warning):
 
@@ -363,7 +349,10 @@ class DashboardTest(ModuleStoreTestCase):
         # Direct link to course redirect to user dashboard
         self.client.get(reverse('courseware', kwargs={"course_id": self.course.id.to_deprecated_string()}))
         log_warning.assert_called_with(
-            u'User %s cannot access the course %s because payment has not yet been received', self.user, self.course.id.to_deprecated_string())
+            u'User %s cannot access the course %s because payment has not yet been received',
+            self.user,
+            unicode(self.course.id),
+        )
 
         # Now re-validating the invoice
         invoice = shoppingcart.models.Invoice.objects.get(id=sale_invoice_1.id)
@@ -495,12 +484,13 @@ class DashboardTest(ModuleStoreTestCase):
             self.assertEquals(response_2.status_code, 200)
 
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    @with_is_edx_domain(True)
     def test_dashboard_header_nav_has_find_courses(self):
         self.client.login(username="jack", password="test")
         response = self.client.get(reverse("dashboard"))
 
-        # "Find courses" is shown in the side panel
-        self.assertContains(response, "Find courses")
+        # "Explore courses" is shown in the side panel
+        self.assertContains(response, "Explore courses")
 
         # But other links are hidden in the navigation
         self.assertNotContains(response, "How it Works")
@@ -902,6 +892,7 @@ class AnonymousLookupTable(ModuleStoreTestCase):
 
 
 # TODO: Clean up these tests so that they use the ProgramsDataMixin.
+@attr('shard_3')
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
 @ddt.ddt
 class DashboardTestXSeriesPrograms(ModuleStoreTestCase, ProgramsApiConfigMixin):
@@ -919,6 +910,7 @@ class DashboardTestXSeriesPrograms(ModuleStoreTestCase, ProgramsApiConfigMixin):
         self.course_3 = CourseFactory.create()
         self.program_name = 'Testing Program'
         self.category = 'xseries'
+        self.display_category = 'XSeries'
 
         CourseModeFactory.create(
             course_id=self.course_1.id,

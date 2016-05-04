@@ -12,7 +12,7 @@ from courseware.courses import get_course_by_id
 
 from verified_track_content.tasks import sync_cohort_with_mode
 from openedx.core.djangoapps.course_groups.cohorts import (
-    get_course_cohorts, CourseCohort, is_course_cohorted
+    get_course_cohorts, CourseCohort, is_course_cohorted, get_random_cohort
 )
 
 import logging
@@ -34,14 +34,20 @@ def move_to_verified_cohort(sender, instance, **kwargs):  # pylint: disable=unus
 
     if verified_cohort_enabled and (instance.mode != instance._old_mode):  # pylint: disable=protected-access
         if not is_course_cohorted(course_key):
-            log.error("Automatic verified cohorting enabled for course '%s', but course is not cohorted", course_key)
+            log.error("Automatic verified cohorting enabled for course '%s', but course is not cohorted.", course_key)
         else:
-            existing_cohorts = get_course_cohorts(get_course_by_id(course_key), CourseCohort.MANUAL)
-            if any(cohort.name == verified_cohort_name for cohort in existing_cohorts):
+            course = get_course_by_id(course_key)
+            existing_manual_cohorts = get_course_cohorts(course, CourseCohort.MANUAL)
+            if any(cohort.name == verified_cohort_name for cohort in existing_manual_cohorts):
+                # Get a random cohort to use as the default cohort (for audit learners).
+                # Note that calling this method will create a "Default Group" random cohort if no random
+                # cohort yet exist.
+                random_cohort = get_random_cohort(course_key)
                 args = {
                     'course_id': unicode(course_key),
                     'user_id': instance.user.id,
-                    'verified_cohort_name': verified_cohort_name
+                    'verified_cohort_name': verified_cohort_name,
+                    'default_cohort_name': random_cohort.name
                 }
                 # Do the update with a 3-second delay in hopes that the CourseEnrollment transaction has been
                 # completed before the celery task runs. We want a reasonably short delay in case the learner
@@ -53,7 +59,8 @@ def move_to_verified_cohort(sender, instance, **kwargs):  # pylint: disable=unus
                 sync_cohort_with_mode.apply_async(kwargs=args, countdown=300)
             else:
                 log.error(
-                    "Automatic verified cohorting enabled for course '%s', but cohort named '%s' does not exist.",
+                    "Automatic verified cohorting enabled for course '%s', "
+                    "but verified cohort named '%s' does not exist.",
                     course_key,
                     verified_cohort_name,
                 )

@@ -366,6 +366,13 @@ class XModuleMixin(XModuleFields, XBlock):
         return course_metadata_utils.display_name_with_default_escaped(self)
 
     @property
+    def tooltip_title(self):
+        """
+        Return the title for the sequence item containing this xmodule as its top level item.
+        """
+        return self.display_name_with_default
+
+    @property
     def xblock_kvs(self):
         """
         Retrieves the internal KeyValueStore for this XModule.
@@ -1475,8 +1482,9 @@ class DescriptorSystem(MetricsMixin, ConfigurableFragmentWrapper, Runtime):
         """
         potential_set = set(super(DescriptorSystem, self).applicable_aside_types(block))
         if getattr(block, 'xmodule_runtime', None) is not None:
-            application_set = set(block.xmodule_runtime.applicable_aside_types(block))
-            return list(potential_set.intersection(application_set))
+            if hasattr(block.xmodule_runtime, 'applicable_aside_types'):
+                application_set = set(block.xmodule_runtime.applicable_aside_types(block))
+                return list(potential_set.intersection(application_set))
         return list(potential_set)
 
     def resource_url(self, resource):

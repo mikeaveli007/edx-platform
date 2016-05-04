@@ -161,7 +161,7 @@ if Backbone?
       voteCounts.hide()
       commentCounts.hide()
       switch @$(".forum-nav-sort-control").val()
-        when "date", "comments"
+        when "activity", "comments"
           commentCounts.show()
         when "votes"
           voteCounts.show()
@@ -337,8 +337,6 @@ if Backbone?
 
     fitName: (name) ->
       @maxNameWidth = @$(".forum-nav-browse").width() -
-        parseInt(@$(".forum-nav-browse").css("padding-left")) -
-        parseInt(@$(".forum-nav-browse").css("padding-right")) -
         @$(".forum-nav-browse .icon").outerWidth(true) -
         @$(".forum-nav-browse-drop-arrow").outerWidth(true)
       width = @getNameWidth(name)
