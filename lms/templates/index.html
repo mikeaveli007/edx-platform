@@ -14,9 +14,9 @@ from django.core.urlresolvers import reverse
             ${homepage_overlay_html}
           % else:
               ## Translators: 'Open edX' is a brand, please keep this untranslated. See http://openedx.org for more information.
-              <h1>${_("Welcome to Open edX!")}</h1>
+              <h1>${_("Welcome to SACHS EDU")}</h1>
               ## Translators: 'Open edX' is a brand, please keep this untranslated. See http://openedx.org for more information.
-              <p>${_("It works! This is the default homepage for this Open edX instance.")}</p>
+              <p>${_("Engage - Educate - Empower")}</p>
           % endif
         </div>
         % if settings.FEATURES.get('ENABLE_COURSE_DISCOVERY'):
@@ -44,6 +44,12 @@ from django.core.urlresolvers import reverse
     </div>
 
   </header>
+  
+  <section class="ribbon">
+    <h1>"Education is the most powerful weapon which you can use to change the world."</h1>
+    <p>Nelson Mandela</p>
+  </section>
+  
   <%include file="${courses_list}" />
 
 </section>

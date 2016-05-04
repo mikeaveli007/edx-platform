@@ -11,7 +11,6 @@ from openedx.core.djangoapps.theming.storage import ThemeStorage, ComprehensiveT
 class ProductionStorage(
         OptimizedFilesMixin,
         ThemePipelineMixin,
-        ComprehensiveThemingCachedFilesMixin,
         ThemeStorage,
         StaticFilesStorage
 ):
