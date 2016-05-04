@@ -834,13 +834,43 @@ class TestVideoCDNRewriting(BaseTestXmodule):
 
     @override_settings(VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS=["www.originalvideo.com"])
     @override_settings(VIDEO_CDN_URL={"CN": "https://chinacdn.cn/"})
-    def test_rewrite_url_concat(self):
+    def test_rewrite_video_url_success(self):
+        """
+        Test successful CDN request.
+        """
+        cdn_response_video_url = settings.VIDEO_CDN_URL["CN"] + self.original_video_file
+
+        self.assertEqual(
+            rewrite_video_url(settings.VIDEO_CDN_URL["CN"],
+                              self.original_video_url,
+                              settings.VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS),
+            cdn_response_video_url
+        )
+
+    @override_settings(VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS=["www.originalvideo.com","someother.com"])
+    @override_settings(VIDEO_CDN_URL={"CN": "https://chinacdn.cn/"})
+    def test_rewrite_url_extended_whitelist_success(self):
         """
         Test that written URLs are returned clean despite input
         """
         cdn_response_video_url = settings.VIDEO_CDN_URL["CN"] + "original_video.mp4"
 
         self.assertEqual(
+            rewrite_video_url(settings.VIDEO_CDN_URL["CN"] + "///",
+                              self.original_video_url,
+                              settings.VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS),
+            cdn_response_video_url
+        )
+
+    @override_settings(VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS=["someother.com","algumaoutra.pt"])
+    @override_settings(VIDEO_CDN_URL={"CN": "https://chinacdn.cn/"})
+    def test_rewrite_url_extended_whitelist_failure(self):
+        """
+        Test that written URLs are returned clean despite input
+        """
+        cdn_response_video_url = settings.VIDEO_CDN_URL["CN"] + "original_video.mp4"
+
+        self.assertIsNone(
             rewrite_video_url(settings.VIDEO_CDN_URL["CN"] + "///",
                               self.original_video_url,
                               settings.VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS),
@@ -863,6 +893,16 @@ class TestVideoCDNRewriting(BaseTestXmodule):
     def test_rewrite_video_url_whitelist(self):
         """
         Test if the original URL is not on the rewrite whitelist
+        """
+        self.assertIsNone(rewrite_video_url(settings.VIDEO_CDN_URL["CN"],
+                                            self.original_video_url,
+                                            settings.VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS))
+
+    @override_settings(VIDEO_CDN_REWRITABLE_SOURCE_DOMAINS=None)
+    @override_settings(VIDEO_CDN_URL={"CN": "https://chinacdn.cn/"})
+    def test_rewrite_video_url_nil_whitelist(self):
+        """
+        Test if the whitelist is None
         """
         self.assertIsNone(rewrite_video_url(settings.VIDEO_CDN_URL["CN"],
                                             self.original_video_url,
