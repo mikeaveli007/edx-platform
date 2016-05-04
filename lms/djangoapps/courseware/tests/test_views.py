@@ -810,18 +810,14 @@ class ViewsTestCase(ModuleStoreTestCase):
         )
 
         view = ''.join(render_accordion(self.request, self.course, table_of_contents['chapters']).split())
-        encoded_course_run = quote(self.course.id.run.encode('utf-8'))
+        encoded_run = quote(self.course.id.run.encode('utf-8'))
 
         self.assertIn(
-            'href="/courses/org.0/course_0/' +
-            encoded_course_run +
-            '/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>',
+            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>'.format(encoded_run),
             view)
 
         self.assertIn(
-            'href="/courses/org.0/course_0/' +
-            encoded_course_run +
-            '/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>',
+            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>'.format(encoded_run),
             view)
 
 
