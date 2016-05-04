@@ -82,6 +82,9 @@ else:
     ${make_chapter(chapter)}
 % endfor
 
-<%static:require_module module_name="js/courseware/accordion_events" class_name="AccordionEvents">
-    AccordionEvents();
-</%static:require_module>
+
+% if toc:
+    <%static:require_module module_name="js/courseware/accordion_events" class_name="AccordionEvents">
+        AccordionEvents();
+    </%static:require_module>
+% endif
