@@ -191,6 +191,7 @@ class ViewsTestCase(ModuleStoreTestCase):
     """
     Tests for views.py methods.
     """
+
     def setUp(self):
         super(ViewsTestCase, self).setUp()
         self.course = CourseFactory.create(display_name=u'teꜱᴛ course')
@@ -813,12 +814,16 @@ class ViewsTestCase(ModuleStoreTestCase):
         encoded_run = quote(self.course.id.run.encode('utf-8'))
 
         self.assertIn(
-            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>'.format(encoded_run),
-            view)
+            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>'
+            .format(encoded_run),
+            view
+        )
 
         self.assertIn(
-            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>'.format(encoded_run),
-            view)
+            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>'
+            .format(encoded_run),
+            view
+        )
 
 
 @attr('shard_1')
@@ -842,7 +847,8 @@ class BaseDueDateTests(ModuleStoreTestCase):
         """
         course = CourseFactory.create(**course_kwargs)
         chapter = ItemFactory.create(category='chapter', parent_location=course.location)
-        section = ItemFactory.create(category='sequential', parent_location=chapter.location, due=datetime(2013, 9, 18, 11, 30, 00))
+        section = ItemFactory.create(category='sequential', parent_location=chapter.location,
+                                     due=datetime(2013, 9, 18, 11, 30, 00))
         vertical = ItemFactory.create(category='vertical', parent_location=section.location)
         ItemFactory.create(category='problem', parent_location=vertical.location)
 
@@ -1061,7 +1067,6 @@ class ProgressPageTests(ModuleStoreTestCase):
             'azU3N_8$',
         ]
         for invalid_id in invalid_student_ids:
-
             self.assertRaises(
                 Http404, views.progress,
                 self.request,
@@ -1150,7 +1155,7 @@ class ProgressPageTests(ModuleStoreTestCase):
         # Enable certificate generation for this course
         certs_api.set_cert_generation_enabled(self.course.id, True)
 
-        #course certificate configurations
+        # course certificate configurations
         certificates = [
             {
                 'id': 1,
@@ -1357,7 +1362,7 @@ class GenerateUserCertTests(ModuleStoreTestCase):
             resp = self.client.post(self.url)
             self.assertEqual(resp.status_code, 200)
 
-            #Verify Google Analytics event fired after generating certificate
+            # Verify Google Analytics event fired after generating certificate
             mock_tracker.track.assert_called_once_with(  # pylint: disable=no-member
                 self.student.id,  # pylint: disable=no-member
                 'edx.bi.user.certificate.generate',
@@ -1369,7 +1374,7 @@ class GenerateUserCertTests(ModuleStoreTestCase):
                 context={
                     'ip': '127.0.0.1',
                     'Google Analytics':
-                    {'clientId': None}
+                        {'clientId': None}
                 }
             )
             mock_tracker.reset_mock()
@@ -1554,6 +1559,7 @@ class TestIndexViewWithGating(ModuleStoreTestCase, MilestonesTestCaseMixin):
     """
     Test the index view for a course with gated content
     """
+
     def setUp(self):
         """
         Set up the initial test data
@@ -1607,6 +1613,7 @@ class TestRenderXBlock(RenderXBlockTestMixin, ModuleStoreTestCase):
     This class overrides the get_response method, which is used by
     the tests defined in RenderXBlockTestMixin.
     """
+
     def setUp(self):
         reload_django_url_config()
         super(TestRenderXBlock, self).setUp()
