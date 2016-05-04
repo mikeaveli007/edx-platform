@@ -3,6 +3,14 @@
 @import '../base/grid-settings';
 @import 'neat/neat'; // lib - Neat
 
+%hide-until-focus {
+  display: inline-block;
+  position: absolute;
+  left: 0px;
+  top: -($baseline*30);
+  overflow: hidden;
+}
+
 .program-card{
   @include span-columns(12);  
   border: 1px solid $border-color-l3;
@@ -89,16 +97,16 @@
   }
 
   .certificate-status {
-    font-size: em(12);
-    color: $gray;
-
+    .link {
+      font-size: em(12);
+      color: $gray;
+    }
+ 
     .secondary {
-      display: inline-block;
-      position: absolute;
-      left: 0px;
-      top: -($baseline*30);
-      overflow: hidden;
+      @extend %hide-until-focus;
+    }
 
+    .link {
       &:focus,
       &:active {
         position: relative;
@@ -106,6 +114,11 @@
         width: auto;
         height: auto;
         margin: 0;
+        text-decoration: none;
+
+        & ~ .link {
+          @extend %hide-until-focus;
+        }
       }
     }
   }
