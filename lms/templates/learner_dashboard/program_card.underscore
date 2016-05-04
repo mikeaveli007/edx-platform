@@ -10,22 +10,22 @@
     </div>
   <% if (progress) { %>  
     <p class="certificate-status">
-        <a href="<%- marketingUrl %>" class="link secondary"><%= interpolate(
-            ngettext(
-                '%(count)s course has not been started.',
-                '%(count)s courses have not been started.',
-                progress.total.not_started
-            ),
-            {count: progress.total.not_started}, true 
-        ) %></a>
-
-        <a href="<%- marketingUrl %>" class="link secondary"><%= interpolate(
+        <a href="<%- marketingUrl %>" class="link secondary" aria-describedby="program-<%- id %>"><%= interpolate(
             ngettext(
                 '%(count)s course is in progress.',
                 '%(count)s courses are in progress.',
                 progress.total.in_progress
             ),
             {count: progress.total.in_progress}, true 
+        ) %></a>
+
+        <a href="<%- marketingUrl %>" class="link secondary" aria-describedby="program-<%- id %>"><%= interpolate(
+            ngettext(
+                '%(count)s course has not been started.',
+                '%(count)s courses have not been started.',
+                progress.total.not_started
+            ),
+            {count: progress.total.not_started}, true 
         ) %></a>
 
         <span id="status-<%- id %>" class="link"><%= interpolate(
