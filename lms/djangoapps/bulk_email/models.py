@@ -66,7 +66,7 @@ class Target(models.Model):
     # choices for to_option field below
     TO_OPTION_CHOICES = zip(TO_OPTIONS, TO_OPTION_DESCRIPTIONS)
 
-    target_type = models.CharField(max_length=64, choices=TO_OPTION_CHOICES, default=SEND_TO_MYSELF)
+    target_type = models.CharField(max_length=64, choices=TO_OPTION_CHOICES)
 
     # base querysets, used by several child class in get_user
     # TODO - need course_id for these
@@ -82,7 +82,6 @@ class Target(models.Model):
     # Should only ever be called by child class __init__
     # Can't be abstract though, b/c of proxy child classes
     def __init__(self, *args, **kwargs):
-        self.target_type = kwargs.pop('target_type', None)
         super(Target, self).__init__(*args, **kwargs)
 
         instance_type = TO_OPTION_CLASS_MAP[self.target_type]
@@ -135,8 +134,8 @@ class LearnersTarget(Target):
         proxy = True  # use the base Target table, this class only changes python functionality
 
     def __init__(self, *args, **kwargs):
-        kwargs['target_type'] = SEND_TO_LEARNER
-        super(LearnerTarget, self).__init__(*args, **kwargs)
+        kwargs['target_type'] = SEND_TO_LEARNERS
+        super(LearnersTarget, self).__init__(*args, **kwargs)
 
     def get_users(self):
         return use_read_replica_if_available(enrollment_qset.exclude(staff_instructor_qset)),
@@ -221,32 +220,34 @@ class CourseEmail(Email):
         if text_message is None:
             text_message = html_to_text(html_message)
 
+        #from nose.tools import set_trace; set_trace()
         new_targets = []
         for target in targets:
             # Ensure our desired target exists
             desired_target_class = TO_OPTION_CLASS_MAP.get(target, None)
             if desired_target_class is None:
                 fmt = 'Course email being sent to unrecognized target: "{target}" for "{course}", subject "{subject}"'
-                msg = fmt.format(target=to_option, course=course_id, subject=subject)
+                msg = fmt.format(target=target, course=course_id, subject=subject)
                 raise ValueError(msg)
-            elif desired_class_target is CohortTarget:
+            elif desired_target_class is CohortTarget:
                 cohort = CohortTarget.ensure_valid_cohort(cohort_name, course_id)
-                new_target = CohortTarget.objects.get_or_create(cohort=cohort)
+                new_target, _ = CohortTarget.objects.get_or_create(target_type=target, cohort=cohort)
             else:
-                new_target = desired_target_class.objects.get_or_create()
-            new_targets.append(target)
+                new_target, _ = desired_target_class.objects.get_or_create(target_type=target)
+            new_targets.append(new_target)
 
         # create the task, then save it immediately:
         course_email = cls(
             course_id=course_id,
             sender=sender,
-            target=new_targets,
             subject=subject,
             html_message=html_message,
             text_message=text_message,
             template_name=template_name,
             from_addr=from_addr,
         )
+        course_email.save()  # Must exist in db before setting M2M relationship values
+        course_email.targets.add(*new_targets)
         course_email.save()
 
         return course_email
