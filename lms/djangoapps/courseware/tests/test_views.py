@@ -817,7 +817,7 @@ class ViewsTestCase(ModuleStoreTestCase):
             encoded_course_run +
             '/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>',
             view)
-        
+
         self.assertIn(
             'href="/courses/org.0/course_0/' +
             encoded_course_run +
