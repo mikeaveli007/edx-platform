@@ -810,18 +810,20 @@ class ViewsTestCase(ModuleStoreTestCase):
             None
         )
 
+        # removes newlines and whitespace from the returned view string
         view = ''.join(render_accordion(self.request, self.course, table_of_contents['chapters']).split())
-        encoded_run = quote(self.course.id.run.encode('utf-8'))
+        # the course id unicode is re-encoded here because the quote function does not accept unicode
+        course_id = quote(unicode(self.course.id).encode("utf-8"))
 
         self.assertIn(
-            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>'
-            .format(encoded_run),
+            u'href="/courses/{}/courseware/Chapter_1/Sequential_1/"><p>Sequential1</p>'
+            .format(course_id.decode("utf-8")),
             view
         )
 
         self.assertIn(
-            'href="/courses/org.0/course_0/{}/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>'
-            .format(encoded_run),
+            u'href="/courses/{}/courseware/Chapter_1/Sequential_2/"><p>Sequential2</p>'
+            .format(course_id),
             view
         )
 
