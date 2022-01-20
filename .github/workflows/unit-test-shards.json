@@ -98,7 +98,6 @@
       "openedx/core/djangoapps/course_apps/",
       "openedx/core/djangoapps/course_date_signals/",
       "openedx/core/djangoapps/course_groups/",
-      "openedx/core/djangoapps/coursegraph/",
       "openedx/core/djangoapps/courseware_api/",
       "openedx/core/djangoapps/crawlers/",
       "openedx/core/djangoapps/credentials/",
@@ -179,7 +178,6 @@
       "openedx/core/djangoapps/course_apps/",
       "openedx/core/djangoapps/course_date_signals/",
       "openedx/core/djangoapps/course_groups/",
-      "openedx/core/djangoapps/coursegraph/",
       "openedx/core/djangoapps/courseware_api/",
       "openedx/core/djangoapps/crawlers/",
       "openedx/core/djangoapps/credentials/",
@@ -238,6 +236,7 @@
     "paths": [
       "cms/djangoapps/api/",
       "cms/djangoapps/cms_user_tasks/",
+      "cms/djangoapps/coursegraph/",
       "cms/djangoapps/course_creators/",
       "cms/djangoapps/export_course_metadata/",
       "cms/djangoapps/maintenance/",
