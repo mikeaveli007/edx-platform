@@ -2199,7 +2199,23 @@ POLICY_CHANGE_TASK_RATE_LIMIT = '300/h'
 # .. setting_default: value of LOW_PRIORITY_QUEUE
 # .. setting_description: The name of the Celery queue to which CourseGraph refresh
 #      tasks will be sent
-COURSEGRAPH_JOB_QUEUE = LOW_PRIORITY_QUEUE
+COURSEGRAPH_JOB_QUEUE: str = LOW_PRIORITY_QUEUE
+
+# .. setting_name: COURSEGRAPH_CONNECTION
+# .. setting_default: 'bolt+s://localhost:7687', in dictionary form.
+# .. setting_description: Dictionary specifying Neo4j connection parameters for
+#      CourseGraph refresh. Accepted keys are protocol ('bolt' or 'http'),
+#      host (str), port (int), user (str), password (str), and secure (bool).
+#      See https://py2neo.org/2021.1/profiles.html#individual-settings for a
+#      a description of each of those keys.
+COURSEGRAPH_CONNECTION: dict = {
+    "protocol": "bolt",
+    "host": "localhost",
+    "port": 7687,
+    "user": "neo4j",
+    "password": None,
+    "secure": True,
+}
 
 ########## Settings for video transcript migration tasks ############
 VIDEO_TRANSCRIPT_MIGRATIONS_JOB_QUEUE = DEFAULT_PRIORITY_QUEUE
