@@ -91,8 +91,8 @@ class TestCourseWaffleFlag(CacheIsolationTestCase):
         Since the org-level override has the same org as the course being checked, the org-level
         override's on/off/unset state determines whether is CourseWaffleFlag is active or not.
 
-        on    = active
-        off   = inactive
+        on    = active (enabled)
+        off   = inactive (disabled)
         unset = mirror the base waffle flag's activity
         """
         WaffleFlagOrgOverrideModel.objects.create(
@@ -123,7 +123,7 @@ class TestCourseWaffleFlag(CacheIsolationTestCase):
         Since the org-level override isn't relevant to the course being checked, whether the
         waffle flag is active/inactive determines whether the CourseWaffleFlag is active or not.
 
-        on/off/unset = mirror the base waffle flag's activity
+        So whether the non-matching org override is on/off/unset, simply mirror the base waffle flag's activity.
         """
         WaffleFlagOrgOverrideModel.objects.create(
             waffle_flag=self.NAMESPACED_FLAG_NAME,
@@ -135,6 +135,62 @@ class TestCourseWaffleFlag(CacheIsolationTestCase):
         # Org doesn't match the course key, so should never be enabled.
         with override_flag(self.NAMESPACED_FLAG_NAME, active=waffle_enabled):
             assert self.TEST_COURSE_FLAG.is_enabled(self.TEST_COURSE_3_KEY) == is_enabled
+
+    @ddt.data(
+        # "unset" isn't a typical override value - it nullifies the presence of the override.
+        # Since both overrides are "unset", use the legacy waffle flag behavior and reflect the flag's active value.
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.unset, WaffleFlagOrgOverrideModel.ALL_CHOICES.unset, False),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.unset, WaffleFlagOrgOverrideModel.ALL_CHOICES.unset, True),
+        # Since the course override matches the course ID and is on, the waffle flag is enabled.
+        # The org override isn't relevant in this situation.
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.on, WaffleFlagOrgOverrideModel.ALL_CHOICES.unset, True),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.on, WaffleFlagOrgOverrideModel.ALL_CHOICES.unset, True),
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.on, WaffleFlagOrgOverrideModel.ALL_CHOICES.on, True),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.on, WaffleFlagOrgOverrideModel.ALL_CHOICES.on, True),
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.on, WaffleFlagOrgOverrideModel.ALL_CHOICES.off, True),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.on, WaffleFlagOrgOverrideModel.ALL_CHOICES.off, True),
+        # Since the course override is nullified and the org override matches
+        # the course ID and is on, the waffle flag is enabled.
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.unset, WaffleFlagOrgOverrideModel.ALL_CHOICES.on, True),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.unset, WaffleFlagOrgOverrideModel.ALL_CHOICES.on, True),
+        # Since the course override matches the course ID but is off, the waffle flag is *not* enabled.
+        # The org override isn't relevant in this situation - it's overridden by the course override.
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.off, WaffleFlagOrgOverrideModel.ALL_CHOICES.on, False),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.off, WaffleFlagOrgOverrideModel.ALL_CHOICES.on, False),
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.off, WaffleFlagOrgOverrideModel.ALL_CHOICES.off, False),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.off, WaffleFlagOrgOverrideModel.ALL_CHOICES.off, False),
+        # Since the either the course override or the org override matches the course ID but is off
+        # AND the other course/org override is unset/nullified, the waffle flag is *not* enabled.
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.off, WaffleFlagOrgOverrideModel.ALL_CHOICES.unset, False),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.off, WaffleFlagOrgOverrideModel.ALL_CHOICES.unset, False),
+        (False, WaffleFlagCourseOverrideModel.ALL_CHOICES.unset, WaffleFlagOrgOverrideModel.ALL_CHOICES.off, False),
+        (True, WaffleFlagCourseOverrideModel.ALL_CHOICES.unset, WaffleFlagOrgOverrideModel.ALL_CHOICES.off, False),
+    )
+    @ddt.unpack
+    def test_matching_course_and_org_override_waffle_flag(
+        self, waffle_enabled, course_override_choice, org_override_choice, is_enabled
+    ):
+        """
+        Tests various combinations of a flag being set in waffle and overridden for both a matching
+        course ID and a matching org - the org which authored/owns the course.
+        Demonstrates the priorities of the two overrides - course and org.
+        """
+        WaffleFlagCourseOverrideModel.objects.create(
+            waffle_flag=self.NAMESPACED_FLAG_NAME,
+            course_id=self.TEST_COURSE_KEY,
+            override_choice=course_override_choice,
+            note='',
+            enabled=True
+        )
+        WaffleFlagOrgOverrideModel.objects.create(
+            waffle_flag=self.NAMESPACED_FLAG_NAME,
+            org=self.TEST_ORG,
+            override_choice=org_override_choice,
+            note='',
+            enabled=True
+        )
+        with override_flag(self.NAMESPACED_FLAG_NAME, active=waffle_enabled):
+            assert self.TEST_COURSE_FLAG.is_enabled(self.TEST_COURSE_KEY) == is_enabled
 
     def test_undefined_waffle_flag(self):
         """

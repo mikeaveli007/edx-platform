@@ -19,7 +19,7 @@ class WaffleFlagCourseOverrideModel(ConfigurationModel):
     A course-level waffle flag overrides a relevant org-level waffle flag.
     An org-level waffle flag overrides any defaults.
 
-    So: Course level overrides (highest priority) ->
+    So: Course level overrides (THIS MODEL) (highest priority) ->
         Org level overrides ->
         Defaults (lowest priority)
 
@@ -83,7 +83,7 @@ class WaffleFlagOrgOverrideModel(ConfigurationModel):
     An org-level waffle flag overrides any defaults.
 
     So: Course level overrides (highest priority) ->
-        Org level overrides ->
+        Org level overrides (THIS MODEL) ->
         Defaults (lowest priority)
 
     .. no_pii:
