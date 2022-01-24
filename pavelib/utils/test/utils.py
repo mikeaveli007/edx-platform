@@ -11,7 +11,6 @@ from paver.easy import cmdopts, sh, task
 
 from pavelib.utils.envs import Env
 from pavelib.utils.timer import timed
-from pavelib.utils.db_utils import get_file_from_s3, upload_to_s3
 
 try:
     from bok_choy.browser import browser
@@ -149,35 +148,3 @@ def check_firefox_version():
             )
         )
 
-
-@task
-@cmdopts([
-    ("compare-branch=", "b", "Branch to compare against, defaults to origin/master"),
-])
-@timed
-def fetch_coverage_test_selection_data(options):
-    """
-    Set up the datafiles needed to run coverage-driven test selection (who-tests-what)
-    """
-
-    try:
-        os.makedirs(COVERAGE_CACHE_BASEPATH)
-    except OSError:
-        pass  # Directory already exists
-
-    sh('git diff $(git merge-base {} HEAD) > {}/{}'.format(
-        getattr(options, 'compare_branch', 'origin/master'),
-        COVERAGE_CACHE_BASEPATH,
-        WHO_TESTS_WHAT_DIFF
-    ))
-    get_file_from_s3(COVERAGE_CACHE_BUCKET, COVERAGE_CACHE_BASELINE, COVERAGE_CACHE_BASEPATH)
-
-
-@task
-def upload_coverage_to_s3():
-    upload_to_s3(
-        COVERAGE_CACHE_BASELINE,
-        'reports/{}.coverage'.format(os.environ.get('TEST_SUITE', '')),
-        COVERAGE_CACHE_BUCKET,
-        replace=True,
-    )
